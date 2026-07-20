@@ -1,6 +1,5 @@
-import React, { useRef, useEffect, Suspense } from 'react'
+import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
-import { motion } from 'framer-motion'
 import { useAudioAnalyser } from '@/hooks/useAudioAnalyser'
 
 const DEFAULT_COLOR = '#ec4899' // rose — matches --color-primary
@@ -137,7 +136,11 @@ function buildParticleField(count) {
   return geometry
 }
 
-function GenerativeArtScene({ audioRef, loveColor }) {
+// Persistent full-viewport WebGL background: a glowing wireframe core plus a
+// reactive particle halo, both driven by real-time audio analysis and by
+// `loveColor`, which the page smoothly lerps toward whenever a love-word cue
+// fires during playback.
+export function AmbientScene({ audioRef, loveColor }) {
   const mountRef = useRef(null)
   const sceneApiRef = useRef(null)
   const { bandsRef, levelRef } = useAudioAnalyser(audioRef)
@@ -253,74 +256,5 @@ function GenerativeArtScene({ audioRef, loveColor }) {
     sceneApiRef.current?.setTargetColor(loveColor || DEFAULT_COLOR)
   }, [loveColor])
 
-  return <div ref={mountRef} className="absolute inset-0 w-full h-full z-0" />
-}
-
-const textContainer = {
-  hidden: {},
-  show: {
-    transition: { staggerChildren: 0.16, delayChildren: 0.2 },
-  },
-}
-
-const textItem = {
-  hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-  },
-}
-
-export function AnomalousMatterHero({
-  eyebrow = 'Observation Log',
-  title = 'Two dates, one heart.',
-  description = 'A love letter, in light and sound.',
-  audioRef,
-  loveColor = DEFAULT_COLOR,
-  children,
-}) {
-  return (
-    <section
-      role="banner"
-      className="relative w-full h-screen bg-[hsl(var(--color-bg))] text-[hsl(var(--color-text))] overflow-hidden"
-    >
-      <Suspense fallback={<div className="w-full h-full bg-[hsl(var(--color-bg))]" />}>
-        <GenerativeArtScene audioRef={audioRef} loveColor={loveColor} />
-      </Suspense>
-
-      <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--color-bg))] via-[hsl(var(--color-bg)/70%)] to-transparent z-10" />
-
-      <motion.div
-        variants={textContainer}
-        initial="hidden"
-        animate="show"
-        className="relative z-20 flex flex-col items-center justify-end h-full pb-20 md:pb-32 text-center px-4"
-      >
-        <motion.p
-          variants={textItem}
-          className="text-xs font-mono tracking-[0.3em] uppercase text-[hsl(var(--color-primary)/85%)]"
-        >
-          {eyebrow}
-        </motion.p>
-        <motion.h1
-          variants={textItem}
-          className="mt-4 text-3xl md:text-5xl font-bold leading-tight max-w-3xl"
-        >
-          {title}
-        </motion.h1>
-        <motion.p
-          variants={textItem}
-          className="mt-6 max-w-xl mx-auto text-base leading-relaxed text-[hsl(var(--color-text-muted))]"
-        >
-          {description}
-        </motion.p>
-        {children && (
-          <motion.div variants={textItem} className="mt-10">
-            {children}
-          </motion.div>
-        )}
-      </motion.div>
-    </section>
-  )
+  return <div ref={mountRef} className="fixed inset-0 w-full h-full z-0 pointer-events-none" />
 }

@@ -20,7 +20,28 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { findLoveWordMatch } from '../src/data/loveWords.js'
+import { LOVE_WORDS } from '../src/data/loveWords.js'
+
+// Whisper's own language auto-detection isn't reliable in this pipeline (it
+// silently defaults to English), so instead we transcribe the same audio
+// once per language present in the dictionary and keep whatever matches
+// come out of each pass — this is what actually catches a language switch
+// mid-recording.
+const WHISPER_LANGUAGE_CODE = {
+  English: 'english',
+  Spanish: 'spanish',
+  French: 'french',
+  German: 'german',
+  Italian: 'italian',
+  Portuguese: 'portuguese',
+  Russian: 'russian',
+  Mandarin: 'chinese',
+  Korean: 'korean',
+  Japanese: 'japanese',
+  Hindi: 'hindi',
+  Arabic: 'arabic',
+  Hebrew: 'hebrew',
+}
 
 const [, , inputPath, outputPathArg] = process.argv
 
@@ -74,27 +95,54 @@ async function main() {
   console.log('Loading multilingual Whisper (first run downloads the model, ~150-300MB)...')
   const transcriber = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base')
 
-  console.log('Transcribing with word-level timestamps...')
-  const result = await transcriber(audio, {
-    return_timestamps: 'word',
-    chunk_length_s: 30,
-  })
+  const languages = [...new Set(LOVE_WORDS.map((entry) => entry.lang))]
+  const allCues = []
 
-  const words = result.chunks ?? []
-  const cues = []
-  for (const chunk of words) {
-    const match = findLoveWordMatch(chunk.text ?? '')
-    const start = chunk.timestamp?.[0]
-    if (match && start != null) {
-      cues.push({ time: Number(start.toFixed(2)), word: match.word, lang: match.lang, color: match.color })
+  for (const lang of languages) {
+    const whisperLanguage = WHISPER_LANGUAGE_CODE[lang]
+    if (!whisperLanguage) continue
+    console.log(`Transcribing as ${lang}...`)
+    const result = await transcriber(audio, {
+      language: whisperLanguage,
+      task: 'transcribe',
+      return_timestamps: 'word',
+      chunk_length_s: 6,
+      stride_length_s: 1,
+    })
+    const chunks = result.chunks ?? []
+    for (const chunk of chunks) {
+      const clean = (chunk.text ?? '')
+        .toLowerCase()
+        .replace(/[.,!?;:"']/g, '')
+        .trim()
+      if (!clean) continue
+      const match = LOVE_WORDS.find(
+        (entry) =>
+          entry.lang === lang &&
+          (clean === entry.word.toLowerCase() || clean.includes(entry.word.toLowerCase())),
+      )
+      const start = chunk.timestamp?.[0]
+      if (match && start != null) {
+        allCues.push({ time: Number(start.toFixed(2)), word: match.word, lang: match.lang, color: match.color })
+      }
     }
+  }
+
+  // Same moment can surface across more than one forced-language pass —
+  // keep only the first cue within any 0.5s window.
+  allCues.sort((a, b) => a.time - b.time)
+  const cues = []
+  for (const cue of allCues) {
+    const prev = cues[cues.length - 1]
+    if (prev && cue.time - prev.time < 0.5) continue
+    cues.push(cue)
   }
 
   const outPath = outputPathArg
     ? path.resolve(outputPathArg)
     : path.resolve(path.dirname(inputPath), `${path.basename(inputPath, path.extname(inputPath))}.cues.json`)
   writeFileSync(outPath, JSON.stringify(cues, null, 2))
-  console.log(`Found ${cues.length} love-word cue(s). Wrote ${outPath}`)
+  console.log(`Found ${cues.length} love-word cue(s) across ${languages.length} languages checked. Wrote ${outPath}`)
   if (cues.length === 0) {
     console.log('No matches found — the site will fall back to a gentle automatic color drift.')
   }
