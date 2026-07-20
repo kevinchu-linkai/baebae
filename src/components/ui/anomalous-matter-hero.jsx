@@ -1,0 +1,326 @@
+import React, { useRef, useEffect, Suspense } from 'react'
+import * as THREE from 'three'
+import { motion } from 'framer-motion'
+import { useAudioAnalyser } from '@/hooks/useAudioAnalyser'
+
+const DEFAULT_COLOR = '#ec4899' // rose — matches --color-primary
+
+const NOISE_GLSL = `
+  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  float snoise(vec3 v) {
+      const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+      vec3 i = floor(v + dot(v, C.yyy));
+      vec3 x0 = v - i + dot(i, C.xxx);
+      vec3 g = step(x0.yzx, x0.xyz);
+      vec3 l = 1.0 - g;
+      vec3 i1 = min(g.xyz, l.zxy);
+      vec3 i2 = max(g.xyz, l.zxy);
+      vec3 x1 = x0 - i1 + C.xxx;
+      vec3 x2 = x0 - i2 + C.yyy;
+      vec3 x3 = x0 - D.yyy;
+      i = mod289(i);
+      vec4 p = permute(permute(permute(
+                  i.z + vec4(0.0, i1.z, i2.z, 1.0))
+              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+      float n_ = 0.142857142857;
+      vec3 ns = n_ * D.wyz - D.xzx;
+      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+      vec4 x_ = floor(j * ns.z);
+      vec4 y_ = floor(j - 7.0 * x_);
+      vec4 x = x_ * ns.x + ns.yyyy;
+      vec4 y = y_ * ns.x + ns.yyyy;
+      vec4 h = 1.0 - abs(x) - abs(y);
+      vec4 b0 = vec4(x.xy, y.xy);
+      vec4 b1 = vec4(x.zw, y.zw);
+      vec4 s0 = floor(b0) * 2.0 + 1.0;
+      vec4 s1 = floor(b1) * 2.0 + 1.0;
+      vec4 sh = -step(h, vec4(0.0));
+      vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+      vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+      vec3 p0 = vec3(a0.xy, h.x);
+      vec3 p1 = vec3(a0.zw, h.y);
+      vec3 p2 = vec3(a1.xy, h.z);
+      vec3 p3 = vec3(a1.zw, h.w);
+      vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+      p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+      vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+      m = m * m;
+      return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+  }
+`
+
+const CORE_VERTEX_SHADER = `
+  uniform float time;
+  uniform float audioLevel;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  ${NOISE_GLSL}
+  void main() {
+      vNormal = normal;
+      vPosition = position;
+      float displacement = snoise(position * 2.0 + time * 0.5) * 0.2 * (1.0 + audioLevel * 1.6);
+      vec3 newPosition = position + normal * displacement;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+  }
+`
+
+const CORE_FRAGMENT_SHADER = `
+  uniform vec3 color;
+  uniform vec3 pointLightPos;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  void main() {
+      vec3 normal = normalize(vNormal);
+      vec3 lightDir = normalize(pointLightPos - vPosition);
+      float diffuse = max(dot(normal, lightDir), 0.0);
+      float fresnel = 1.0 - dot(normal, vec3(0.0, 0.0, 1.0));
+      fresnel = pow(fresnel, 2.0);
+      vec3 finalColor = color * diffuse + color * fresnel * 0.5;
+      gl_FragColor = vec4(finalColor, 1.0);
+  }
+`
+
+const PARTICLE_VERTEX_SHADER = `
+  uniform float time;
+  uniform float bands[8];
+  attribute float aBand;
+  attribute float aSeed;
+  varying float vAmp;
+  void main() {
+      int band = int(aBand);
+      float amp = bands[band];
+      vAmp = amp;
+      float wobble = sin(time * 0.6 + aSeed * 6.2831853) * 0.06;
+      vec3 pos = position * (1.0 + amp * 0.55 + wobble);
+      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = (2.0 + amp * 7.0) * (300.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+  }
+`
+
+const PARTICLE_FRAGMENT_SHADER = `
+  uniform vec3 color;
+  varying float vAmp;
+  void main() {
+      float d = length(gl_PointCoord - vec2(0.5));
+      if (d > 0.5) discard;
+      float alpha = smoothstep(0.5, 0.0, d) * (0.25 + vAmp * 0.75);
+      gl_FragColor = vec4(color, alpha);
+  }
+`
+
+function buildParticleField(count) {
+  const positions = new Float32Array(count * 3)
+  const bands = new Float32Array(count)
+  const seeds = new Float32Array(count)
+
+  for (let i = 0; i < count; i++) {
+    const radius = 1.9 + Math.random() * 1.4
+    const theta = Math.random() * Math.PI * 2
+    const phi = Math.acos(2 * Math.random() - 1)
+    positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta)
+    positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta)
+    positions[i * 3 + 2] = radius * Math.cos(phi)
+    bands[i] = Math.floor(Math.random() * 8)
+    seeds[i] = Math.random()
+  }
+
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
+  geometry.setAttribute('aBand', new THREE.BufferAttribute(bands, 1))
+  geometry.setAttribute('aSeed', new THREE.BufferAttribute(seeds, 1))
+  return geometry
+}
+
+function GenerativeArtScene({ audioRef, loveColor }) {
+  const mountRef = useRef(null)
+  const sceneApiRef = useRef(null)
+  const { bandsRef, levelRef } = useAudioAnalyser(audioRef)
+
+  useEffect(() => {
+    const currentMount = mountRef.current
+    const scene = new THREE.Scene()
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      currentMount.clientWidth / currentMount.clientHeight,
+      0.1,
+      1000,
+    )
+    camera.position.z = 3.4
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
+    renderer.setSize(currentMount.clientWidth, currentMount.clientHeight)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    currentMount.appendChild(renderer.domElement)
+
+    const currentColor = new THREE.Color(loveColor || DEFAULT_COLOR)
+    const targetColor = new THREE.Color(loveColor || DEFAULT_COLOR)
+
+    const coreGeometry = new THREE.IcosahedronGeometry(1.15, 24)
+    const coreMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        audioLevel: { value: 0 },
+        pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
+        color: { value: currentColor.clone() },
+      },
+      vertexShader: CORE_VERTEX_SHADER,
+      fragmentShader: CORE_FRAGMENT_SHADER,
+      wireframe: true,
+    })
+    const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial)
+    scene.add(coreMesh)
+
+    const particleGeometry = buildParticleField(2400)
+    const particleMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        bands: { value: new Array(8).fill(0) },
+        color: { value: currentColor.clone() },
+      },
+      vertexShader: PARTICLE_VERTEX_SHADER,
+      fragmentShader: PARTICLE_FRAGMENT_SHADER,
+      transparent: true,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+    })
+    const particles = new THREE.Points(particleGeometry, particleMaterial)
+    scene.add(particles)
+
+    let frameId
+    const animate = (t) => {
+      const time = t * 0.0003
+      coreMaterial.uniforms.time.value = time
+      particleMaterial.uniforms.time.value = time
+      coreMaterial.uniforms.audioLevel.value = levelRef.current
+      particleMaterial.uniforms.bands.value = Array.from(bandsRef.current)
+
+      currentColor.lerp(targetColor, 0.02)
+      coreMaterial.uniforms.color.value.copy(currentColor)
+      particleMaterial.uniforms.color.value.copy(currentColor)
+
+      coreMesh.rotation.y += 0.0006 + levelRef.current * 0.002
+      coreMesh.rotation.x += 0.0003
+      particles.rotation.y -= 0.00015
+
+      renderer.render(scene, camera)
+      frameId = requestAnimationFrame(animate)
+    }
+    animate(0)
+
+    const handleResize = () => {
+      camera.aspect = currentMount.clientWidth / currentMount.clientHeight
+      camera.updateProjectionMatrix()
+      renderer.setSize(currentMount.clientWidth, currentMount.clientHeight)
+    }
+
+    const handleMouseMove = (e) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1
+      const y = -(e.clientY / window.innerHeight) * 2 + 1
+      const vec = new THREE.Vector3(x, y, 0.5).unproject(camera)
+      const dir = vec.sub(camera.position).normalize()
+      const dist = -camera.position.z / dir.z
+      const pos = camera.position.clone().add(dir.multiplyScalar(dist))
+      coreMaterial.uniforms.pointLightPos.value.copy(pos)
+    }
+
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('mousemove', handleMouseMove)
+
+    sceneApiRef.current = { setTargetColor: (hex) => targetColor.set(hex) }
+
+    return () => {
+      cancelAnimationFrame(frameId)
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('mousemove', handleMouseMove)
+      currentMount.removeChild(renderer.domElement)
+      coreGeometry.dispose()
+      coreMaterial.dispose()
+      particleGeometry.dispose()
+      particleMaterial.dispose()
+      renderer.dispose()
+      sceneApiRef.current = null
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    sceneApiRef.current?.setTargetColor(loveColor || DEFAULT_COLOR)
+  }, [loveColor])
+
+  return <div ref={mountRef} className="absolute inset-0 w-full h-full z-0" />
+}
+
+const textContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.16, delayChildren: 0.2 },
+  },
+}
+
+const textItem = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+}
+
+export function AnomalousMatterHero({
+  eyebrow = 'Observation Log',
+  title = 'Two dates, one heart.',
+  description = 'A love letter, in light and sound.',
+  audioRef,
+  loveColor = DEFAULT_COLOR,
+  children,
+}) {
+  return (
+    <section
+      role="banner"
+      className="relative w-full h-screen bg-[hsl(var(--color-bg))] text-[hsl(var(--color-text))] overflow-hidden"
+    >
+      <Suspense fallback={<div className="w-full h-full bg-[hsl(var(--color-bg))]" />}>
+        <GenerativeArtScene audioRef={audioRef} loveColor={loveColor} />
+      </Suspense>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-[hsl(var(--color-bg))] via-[hsl(var(--color-bg)/70%)] to-transparent z-10" />
+
+      <motion.div
+        variants={textContainer}
+        initial="hidden"
+        animate="show"
+        className="relative z-20 flex flex-col items-center justify-end h-full pb-20 md:pb-32 text-center px-4"
+      >
+        <motion.p
+          variants={textItem}
+          className="text-xs font-mono tracking-[0.3em] uppercase text-[hsl(var(--color-primary)/85%)]"
+        >
+          {eyebrow}
+        </motion.p>
+        <motion.h1
+          variants={textItem}
+          className="mt-4 text-3xl md:text-5xl font-bold leading-tight max-w-3xl"
+        >
+          {title}
+        </motion.h1>
+        <motion.p
+          variants={textItem}
+          className="mt-6 max-w-xl mx-auto text-base leading-relaxed text-[hsl(var(--color-text-muted))]"
+        >
+          {description}
+        </motion.p>
+        {children && (
+          <motion.div variants={textItem} className="mt-10">
+            {children}
+          </motion.div>
+        )}
+      </motion.div>
+    </section>
+  )
+}
