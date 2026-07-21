@@ -67,7 +67,7 @@ const CORE_VERTEX_SHADER = `
       // speeds up the ripple; volume (audioLevel) controls how strong it is.
       float freq = 1.6 + pitch * 2.2;
       float speed = 0.4 + pitch * 0.4;
-      float displacement = snoise(position * freq + time * speed) * 0.2 * (1.0 + audioLevel * 1.6);
+      float displacement = snoise(position * freq + time * speed) * 0.34 * (1.0 + audioLevel * 3.2);
       vec3 newPosition = position + normal * displacement;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
   }
@@ -314,8 +314,8 @@ export function AmbientScene({ audioRef, loveColor }) {
 
       // Volume pump: fast attack toward a louder moment, slow release after —
       // a heartbeat thump rather than a level meter following every wiggle.
-      const targetPump = 1 + levelRef.current * 0.22
-      pump += (targetPump - pump) * (targetPump > pump ? 0.35 : 0.06)
+      const targetPump = 1 + levelRef.current * 0.55
+      pump += (targetPump - pump) * (targetPump > pump ? 0.5 : 0.08)
       coreMesh.scale.setScalar(pump)
       fillMesh.scale.setScalar(pump * 0.96)
 
