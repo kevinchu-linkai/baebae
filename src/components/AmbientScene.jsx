@@ -84,6 +84,33 @@ const CORE_FRAGMENT_SHADER = `
   }
 `
 
+// A soft, semi-transparent fill nested just inside the wireframe heart shell.
+// Adds a Blinn-Phong specular glint (tinted near-white, like polished metal)
+// on top of the same warm color/fresnel glow — a "minor touch" of metallic
+// sheen rather than a full PBR material.
+const HEART_FILL_FRAGMENT_SHADER = `
+  uniform vec3 color;
+  uniform vec3 pointLightPos;
+  varying vec3 vNormal;
+  varying vec3 vPosition;
+  void main() {
+      vec3 normal = normalize(vNormal);
+      vec3 lightDir = normalize(pointLightPos - vPosition);
+      vec3 viewDir = normalize(cameraPosition - vPosition);
+      vec3 halfDir = normalize(lightDir + viewDir);
+
+      float diffuse = max(dot(normal, lightDir), 0.0);
+      float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 2.5);
+      float spec = pow(max(dot(normal, halfDir), 0.0), 48.0);
+
+      vec3 base = color * (0.3 + diffuse * 0.45);
+      vec3 metallic = vec3(1.0, 0.98, 0.94) * spec * 0.65;
+      vec3 sheen = vec3(0.85, 0.85, 0.95) * fresnel * 0.22;
+
+      gl_FragColor = vec4(base + metallic + sheen, 0.45);
+  }
+`
+
 const PARTICLE_VERTEX_SHADER = `
   uniform float time;
   uniform float bands[8];
@@ -112,6 +139,36 @@ const PARTICLE_FRAGMENT_SHADER = `
       gl_FragColor = vec4(color, alpha);
   }
 `
+
+// Classic parametric heart curve (x = 16sin³t, y = 13cos t − 5cos2t − 2cos3t
+// − cos4t), sampled densely and extruded with a bevel for real 3D depth
+// instead of a flat cutout.
+function createHeartGeometry() {
+  const shape = new THREE.Shape()
+  const steps = 120
+  const scale = 1 / 15
+
+  for (let i = 0; i <= steps; i++) {
+    const t = (i / steps) * Math.PI * 2
+    const x = 16 * Math.pow(Math.sin(t), 3) * scale
+    const y =
+      (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale
+    if (i === 0) shape.moveTo(x, y)
+    else shape.lineTo(x, y)
+  }
+
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.5,
+    bevelEnabled: true,
+    bevelThickness: 0.14,
+    bevelSize: 0.14,
+    bevelSegments: 8,
+    curveSegments: 12,
+  })
+  geometry.center()
+  geometry.computeVertexNormals()
+  return geometry
+}
 
 function buildParticleField(count) {
   const positions = new Float32Array(count * 3)
@@ -164,7 +221,7 @@ export function AmbientScene({ audioRef, loveColor }) {
     const currentColor = new THREE.Color(loveColor || DEFAULT_COLOR)
     const targetColor = new THREE.Color(loveColor || DEFAULT_COLOR)
 
-    const coreGeometry = new THREE.IcosahedronGeometry(1.15, 24)
+    const coreGeometry = createHeartGeometry()
     const coreMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
@@ -178,6 +235,24 @@ export function AmbientScene({ audioRef, loveColor }) {
     })
     const coreMesh = new THREE.Mesh(coreGeometry, coreMaterial)
     scene.add(coreMesh)
+
+    // Nested solid fill — same heart, slightly smaller, carrying the metallic
+    // specular sheen — sitting inside the wireframe shell.
+    const fillMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        time: { value: 0 },
+        audioLevel: { value: 0 },
+        pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
+        color: { value: currentColor.clone() },
+      },
+      vertexShader: CORE_VERTEX_SHADER,
+      fragmentShader: HEART_FILL_FRAGMENT_SHADER,
+      transparent: true,
+      depthWrite: false,
+    })
+    const fillMesh = new THREE.Mesh(coreGeometry, fillMaterial)
+    fillMesh.scale.setScalar(0.96)
+    scene.add(fillMesh)
 
     const particleGeometry = buildParticleField(2400)
     const particleMaterial = new THREE.ShaderMaterial({
@@ -199,16 +274,20 @@ export function AmbientScene({ audioRef, loveColor }) {
     const animate = (t) => {
       const time = t * 0.0003
       coreMaterial.uniforms.time.value = time
+      fillMaterial.uniforms.time.value = time
       particleMaterial.uniforms.time.value = time
       coreMaterial.uniforms.audioLevel.value = levelRef.current
+      fillMaterial.uniforms.audioLevel.value = levelRef.current
       particleMaterial.uniforms.bands.value = Array.from(bandsRef.current)
 
       currentColor.lerp(targetColor, 0.02)
       coreMaterial.uniforms.color.value.copy(currentColor)
+      fillMaterial.uniforms.color.value.copy(currentColor)
       particleMaterial.uniforms.color.value.copy(currentColor)
 
       coreMesh.rotation.y += 0.0006 + levelRef.current * 0.002
       coreMesh.rotation.x += 0.0003
+      fillMesh.rotation.copy(coreMesh.rotation)
       particles.rotation.y -= 0.00015
 
       renderer.render(scene, camera)
@@ -230,6 +309,7 @@ export function AmbientScene({ audioRef, loveColor }) {
       const dist = -camera.position.z / dir.z
       const pos = camera.position.clone().add(dir.multiplyScalar(dist))
       coreMaterial.uniforms.pointLightPos.value.copy(pos)
+      fillMaterial.uniforms.pointLightPos.value.copy(pos)
     }
 
     window.addEventListener('resize', handleResize)
@@ -244,6 +324,7 @@ export function AmbientScene({ audioRef, loveColor }) {
       currentMount.removeChild(renderer.domElement)
       coreGeometry.dispose()
       coreMaterial.dispose()
+      fillMaterial.dispose()
       particleGeometry.dispose()
       particleMaterial.dispose()
       renderer.dispose()

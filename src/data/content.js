@@ -62,14 +62,14 @@ export const content = {
 
   cake: {
     heading: '許個願吧。',
-    subheading: '吹熄所有蠟燭,解鎖卡片。',
+    subheading: '吹熄所有蠟燭,解鎖卡片( ´ ▽ ` )ﾉ',
     candleCount: 24,
   },
 
   letter: {
-    heading: '給妳的一封信',
-    lockedHint: '把上面的蠟燭都吹熄,才能打開閱讀。',
-    readHint: '輕輕點一下信,讓它慢慢往下展開。',
+    heading: '給妳的卡片呦',
+    lockedHint: '把上面的蠟燭都吹熄,才能打開！',
+    readHint: '輕輕點一下信,慢慢展開。',
     paragraphs: [
       '〔待填寫〕用今天的心情作為信的開頭。',
       '〔待填寫〕用妳自己的話,寫一兩個具體的回憶。',
@@ -81,7 +81,7 @@ export const content = {
   },
 
   finale: {
-    line: '敬妳,也敬我們——生日快樂,紀念日快樂。',
-    replayLabel: '重新看一次我們的故事',
+    line: '生日快樂,紀念日快樂呦！',
+    replayLabel: '再看一次( ´ ▽ ` )ﾉ',
   },
 }
