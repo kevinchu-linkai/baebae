@@ -56,13 +56,18 @@ const NOISE_GLSL = `
 const CORE_VERTEX_SHADER = `
   uniform float time;
   uniform float audioLevel;
+  uniform float pitch;
   varying vec3 vNormal;
   varying vec3 vPosition;
   ${NOISE_GLSL}
   void main() {
       vNormal = normal;
       vPosition = position;
-      float displacement = snoise(position * 2.0 + time * 0.5) * 0.2 * (1.0 + audioLevel * 1.6);
+      // Pitch (spectral centroid — treble-heavy vs bass-heavy) tightens and
+      // speeds up the ripple; volume (audioLevel) controls how strong it is.
+      float freq = 1.6 + pitch * 2.2;
+      float speed = 0.4 + pitch * 0.4;
+      float displacement = snoise(position * freq + time * speed) * 0.2 * (1.0 + audioLevel * 1.6);
       vec3 newPosition = position + normal * displacement;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
   }
@@ -91,6 +96,7 @@ const CORE_FRAGMENT_SHADER = `
 const HEART_FILL_FRAGMENT_SHADER = `
   uniform vec3 color;
   uniform vec3 pointLightPos;
+  uniform float pitch;
   varying vec3 vNormal;
   varying vec3 vPosition;
   void main() {
@@ -104,7 +110,8 @@ const HEART_FILL_FRAGMENT_SHADER = `
       float spec = pow(max(dot(normal, halfDir), 0.0), 48.0);
 
       vec3 base = color * (0.3 + diffuse * 0.45);
-      vec3 metallic = vec3(1.0, 0.98, 0.94) * spec * 0.65;
+      // Brighter, sharper glint on treble-heavy moments; warmer/duller on bass.
+      vec3 metallic = vec3(1.0, 0.98, 0.94) * spec * (0.45 + pitch * 0.5);
       vec3 sheen = vec3(0.85, 0.85, 0.95) * fresnel * 0.22;
 
       gl_FragColor = vec4(base + metallic + sheen, 0.45);
@@ -221,11 +228,20 @@ export function AmbientScene({ audioRef, loveColor }) {
     const currentColor = new THREE.Color(loveColor || DEFAULT_COLOR)
     const targetColor = new THREE.Color(loveColor || DEFAULT_COLOR)
 
+    // Heartbeat-style envelope follower for the volume "pump": snaps up fast
+    // on a loud moment, eases back down slowly — a thump, not a wobble.
+    let pump = 1
+    // Smoothed spectral centroid (low bands weighted vs high bands) as a
+    // lightweight stand-in for "pitch" — true pitch detection needs
+    // autocorrelation, which is overkill for a background visual.
+    let pitchSmooth = 0.3
+
     const coreGeometry = createHeartGeometry()
     const coreMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
         audioLevel: { value: 0 },
+        pitch: { value: 0.3 },
         pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
         color: { value: currentColor.clone() },
       },
@@ -242,6 +258,7 @@ export function AmbientScene({ audioRef, loveColor }) {
       uniforms: {
         time: { value: 0 },
         audioLevel: { value: 0 },
+        pitch: { value: 0.3 },
         pointLightPos: { value: new THREE.Vector3(0, 0, 5) },
         color: { value: currentColor.clone() },
       },
@@ -278,7 +295,29 @@ export function AmbientScene({ audioRef, loveColor }) {
       particleMaterial.uniforms.time.value = time
       coreMaterial.uniforms.audioLevel.value = levelRef.current
       fillMaterial.uniforms.audioLevel.value = levelRef.current
-      particleMaterial.uniforms.bands.value = Array.from(bandsRef.current)
+      const bands = bandsRef.current
+      particleMaterial.uniforms.bands.value = Array.from(bands)
+
+      // Spectral centroid: weight each band by its index (0 = bass, 7 =
+      // treble) and normalize — a rough "how high/bright does this sound"
+      // reading from the same 8 bands already used for the particle halo.
+      let bandSum = 0
+      let bandWeighted = 0
+      for (let i = 0; i < bands.length; i++) {
+        bandSum += bands[i]
+        bandWeighted += bands[i] * i
+      }
+      const centroid = bandSum > 0.02 ? bandWeighted / bandSum / (bands.length - 1) : pitchSmooth
+      pitchSmooth += (centroid - pitchSmooth) * 0.06
+      coreMaterial.uniforms.pitch.value = pitchSmooth
+      fillMaterial.uniforms.pitch.value = pitchSmooth
+
+      // Volume pump: fast attack toward a louder moment, slow release after —
+      // a heartbeat thump rather than a level meter following every wiggle.
+      const targetPump = 1 + levelRef.current * 0.22
+      pump += (targetPump - pump) * (targetPump > pump ? 0.35 : 0.06)
+      coreMesh.scale.setScalar(pump)
+      fillMesh.scale.setScalar(pump * 0.96)
 
       currentColor.lerp(targetColor, 0.02)
       coreMaterial.uniforms.color.value.copy(currentColor)
