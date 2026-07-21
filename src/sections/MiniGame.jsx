@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Confetti } from '@/components/Confetti'
+import { Candle } from '@/components/Candle'
 import { content } from '@/data/content'
 
 function Quiz() {
@@ -63,41 +64,6 @@ function Quiz() {
   )
 }
 
-function Candle({ blown, onBlow, index }) {
-  return (
-    <button
-      type="button"
-      onClick={onBlow}
-      disabled={blown}
-      className="relative flex flex-col items-center"
-      aria-label={`第 ${index + 1} 根蠟燭`}
-    >
-      <div className="h-8 w-6 flex items-center justify-center">
-        <AnimatePresence>
-          {!blown && (
-            <motion.div
-              initial={{ opacity: 1, scale: 1 }}
-              animate={{
-                scale: [1, 1.15, 0.95, 1],
-                rotate: [0, -4, 4, 0],
-              }}
-              exit={{ opacity: 0, scale: 0, y: -10 }}
-              transition={{
-                scale: { duration: 1.1, repeat: Infinity, ease: 'easeInOut' },
-                rotate: { duration: 1.1, repeat: Infinity, ease: 'easeInOut' },
-                exit: { duration: 0.3 },
-              }}
-              className="h-4 w-3 rounded-full bg-[hsl(var(--color-accent))]"
-              style={{ boxShadow: '0 0 10px 2px hsl(var(--color-accent)/70%)' }}
-            />
-          )}
-        </AnimatePresence>
-      </div>
-      <div className="h-10 w-3 rounded-sm bg-[hsl(var(--color-primary))]" />
-    </button>
-  )
-}
-
 function Cake({ onAllBlown }) {
   const [blown, setBlown] = useState(() => new Set())
   const total = content.cake.candleCount
@@ -118,13 +84,13 @@ function Cake({ onAllBlown }) {
       </p>
       <p className="mt-2 text-sm text-[hsl(var(--color-text-muted))]">{content.cake.subheading}</p>
 
-      <div className="mt-8 flex justify-center gap-3">
+      <div className="flex justify-center">
         {Array.from({ length: total }, (_, i) => (
           <Candle key={i} index={i} blown={blown.has(i)} onBlow={() => blowCandle(i)} />
         ))}
       </div>
-      <div className="mx-auto mt-1 h-16 w-64 rounded-t-[40%] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))]" />
-      <div className="mx-auto h-6 w-72 rounded-b-xl bg-[hsl(var(--color-surface))] border border-t-0 border-[hsl(var(--color-border))]" />
+      <div className="mx-auto -mt-2 h-16 w-72 rounded-t-[40%] bg-[hsl(var(--color-surface))] border border-[hsl(var(--color-border))]" />
+      <div className="mx-auto h-6 w-80 rounded-b-xl bg-[hsl(var(--color-surface))] border border-t-0 border-[hsl(var(--color-border))]" />
     </div>
   )
 }

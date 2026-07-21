@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AmbientScene } from '@/components/AmbientScene'
 import { FloatingAudioControl } from '@/components/FloatingAudioControl'
+import { Fireflies } from '@/components/Fireflies'
 import { Intro } from '@/sections/Intro'
 import { DualFrame } from '@/sections/DualFrame'
 import { DualCities } from '@/sections/DualCities'
@@ -125,10 +126,15 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('candles-out', candlesBlown)
+  }, [candlesBlown])
+
   return (
     <>
       <audio ref={audioRef} src={track.src} preload="none" loop />
       <AmbientScene audioRef={audioRef} loveColor={loveColor} />
+      <Fireflies active={candlesBlown} />
 
       <Intro started={started} onStart={handleStart} />
 

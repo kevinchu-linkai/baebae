@@ -56,6 +56,17 @@
   }
 }
 
+/* Forced after every candle is blown out — a deliberate mood shift, not
+   tied to the visitor's system light/dark preference. The class selector's
+   extra specificity wins over the light-scheme media query above. */
+:root.candles-out {
+  --color-bg: 262 48% 5%;
+  --color-surface: 260 38% 9%;
+  --color-text: 300 25% 96%;
+  --color-text-muted: 285 15% 72%;
+  --color-border: 270 24% 20%;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -65,6 +76,7 @@ body {
   font-family: 'Noto Serif TC', 'Georgia', 'Iowan Old Style', serif;
   background: hsl(var(--color-bg));
   color: hsl(var(--color-text));
+  transition: background-color 1.2s ease, color 1.2s ease;
 }
 
 h1, h2, h3 {
