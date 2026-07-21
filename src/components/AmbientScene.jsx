@@ -285,8 +285,10 @@ export function AmbientScene({ audioRef, loveColor }) {
       fillMaterial.uniforms.color.value.copy(currentColor)
       particleMaterial.uniforms.color.value.copy(currentColor)
 
-      coreMesh.rotation.y += 0.0006 + levelRef.current * 0.002
-      coreMesh.rotation.x += 0.0003
+      // A small oscillating sway (not a spin) so the heart stays readable
+      // face-on — it never accumulates rotation, just gently settles back.
+      coreMesh.rotation.y = Math.sin(time * 0.8) * (0.06 + levelRef.current * 0.05)
+      coreMesh.rotation.x = Math.sin(time * 0.6 + 1.5) * 0.03
       fillMesh.rotation.copy(coreMesh.rotation)
       particles.rotation.y -= 0.00015
 
