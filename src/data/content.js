@@ -69,6 +69,7 @@ export const content = {
   letter: {
     heading: '給妳的一封信',
     lockedHint: '把上面的蠟燭都吹熄,才能打開閱讀。',
+    readHint: '輕輕點一下信,讓它慢慢往下展開。',
     paragraphs: [
       '〔待填寫〕用今天的心情作為信的開頭。',
       '〔待填寫〕用妳自己的話,寫一兩個具體的回憶。',
