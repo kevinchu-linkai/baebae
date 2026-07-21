@@ -9,17 +9,25 @@ Apply these rules to every component, page, and style change in this project. Do
 
 ## Typography scale
 
-Use a modular scale, not arbitrary sizes. Define once as CSS custom properties (e.g. in `src/index.css`) and reference everywhere:
+Use a modular scale, not arbitrary sizes. This scale is wired directly into Tailwind's theme via an `@theme` block in `src/index.css`, so plain `text-xs`/`text-sm`/`text-base`/etc. utility classes already resolve to it everywhere — don't reintroduce a separate `--text-*` custom-property layer, and don't hand-pick pixel values in a `className`.
 
 ```css
---text-xs: 0.75rem;    /* 12px — captions, labels, metadata */
---text-sm: 0.875rem;   /* 14px — secondary text, form hints */
---text-base: 1rem;     /* 16px — body copy */
---text-lg: 1.25rem;    /* 20px — lead paragraphs, card titles */
---text-xl: 1.5rem;     /* 24px — section headings */
---text-2xl: 2rem;      /* 32px — page headings */
---text-3xl: 3rem;      /* 48px — hero headings */
+@theme {
+  --text-xs: 0.875rem;   /* 14px — captions, labels, metadata */
+  --text-sm: 1rem;       /* 16px — secondary text, form hints */
+  --text-base: 1.125rem; /* 18px — body copy */
+  --text-lg: 1.25rem;    /* 20px — lead paragraphs, card titles */
+  --text-xl: 1.5rem;     /* 24px — section headings */
+  --text-2xl: 1.875rem;  /* 30px — page headings */
+  --text-3xl: 2.5rem;    /* 40px — hero headings */
+  --text-4xl: 3rem;      /* 48px */
+  --text-5xl: 3.75rem;   /* 60px */
+}
+```
 
+Sized deliberately larger than Tailwind's stock scale — this is a site meant to be read carefully (often on a phone), not a dense app UI. Favor `text-base`/`text-lg` for anything the reader is meant to actually read (letter, love list, memory captions); reserve `text-xs`/`text-sm` for true metadata (eyebrows, timestamps, hints).
+
+```css
 --font-normal: 400;
 --font-medium: 500;
 --font-semibold: 600;

@@ -60,10 +60,10 @@ export function Letter({ unlocked }) {
           {content.letter.heading}
         </p>
         {!unlocked && (
-          <p className="mt-2 text-sm text-[hsl(var(--color-text-muted))]">{content.letter.lockedHint}</p>
+          <p className="mt-2 text-base text-[hsl(var(--color-text-muted))]">{content.letter.lockedHint}</p>
         )}
         {unlocked && phase === 'typing' && lineIndex === 0 && charCount === 0 && (
-          <p className="mt-2 text-sm text-[hsl(var(--color-text-muted))]">{content.letter.readHint}</p>
+          <p className="mt-2 text-base text-[hsl(var(--color-text-muted))]">{content.letter.readHint}</p>
         )}
       </div>
 
@@ -84,13 +84,13 @@ export function Letter({ unlocked }) {
           className="block w-full cursor-pointer rounded-2xl border border-[hsl(var(--color-border))] bg-[hsl(var(--color-surface)/60%)] px-6 py-10 text-left md:px-10 space-y-5"
         >
           {paragraphs.slice(0, lineIndex).map((p, i) => (
-            <p key={i} className="text-sm md:text-base leading-relaxed text-[hsl(var(--color-text))]">
+            <p key={i} className="text-base md:text-lg leading-relaxed text-[hsl(var(--color-text))]">
               {p}
             </p>
           ))}
 
           {unlocked && lineIndex < paragraphs.length && (
-            <p className="text-sm md:text-base leading-relaxed text-[hsl(var(--color-text))]">
+            <p className="text-base md:text-lg leading-relaxed text-[hsl(var(--color-text))]">
               {paragraphs[lineIndex].slice(0, charCount)}
               {phase === 'typing' && (
                 <span className="ml-0.5 inline-block w-[2px] h-[1em] align-middle bg-[hsl(var(--color-primary))] animate-pulse" />
@@ -104,7 +104,7 @@ export function Letter({ unlocked }) {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: 'easeOut' }}
-                className="pt-2 text-sm italic text-[hsl(var(--color-text-muted))]"
+                className="pt-2 text-base italic text-[hsl(var(--color-text-muted))]"
               >
                 {content.letter.signOff}
               </motion.p>
@@ -118,7 +118,7 @@ export function Letter({ unlocked }) {
                 animate={{ opacity: [0.4, 1, 0.4] }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                className="pt-2 text-xs text-[hsl(var(--color-primary)/85%)]"
+                className="pt-2 text-sm text-[hsl(var(--color-primary)/85%)]"
               >
                 點一下繼續 ↓
               </motion.p>

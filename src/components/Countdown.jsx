@@ -24,19 +24,19 @@ export function Countdown({ label, targetDate }) {
     <motion.div
       whileHover={{ y: -3 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="rounded-xl border border-[hsl(var(--color-border))] bg-[hsl(var(--color-surface)/70%)] px-6 py-5 min-w-[220px]"
+      className="rounded-xl border border-[hsl(var(--color-border))] bg-[hsl(var(--color-surface)/70%)] px-7 py-6 min-w-[240px]"
     >
-      <p className="text-xs uppercase tracking-[0.2em] text-[hsl(var(--color-text-muted))]">
+      <p className="text-sm uppercase tracking-[0.2em] text-[hsl(var(--color-text-muted))]">
         {label}
       </p>
       {remaining.done ? (
-        <p className="mt-2 text-lg font-semibold text-[hsl(var(--color-primary))]">就是今天 ♥</p>
+        <p className="mt-2 text-xl font-semibold text-[hsl(var(--color-primary))]">就是今天 ♥</p>
       ) : (
-        <div className="mt-2 flex gap-3">
+        <div className="mt-3 flex gap-4">
           {(['days', 'hours', 'minutes', 'seconds']).map((unit) => (
             <div key={unit} className="text-center">
-              <div className="text-xl font-bold tabular-nums">{remaining[unit]}</div>
-              <div className="text-[10px] uppercase tracking-wide text-[hsl(var(--color-text-muted))]">
+              <div className="text-2xl font-bold tabular-nums">{remaining[unit]}</div>
+              <div className="text-xs uppercase tracking-wide text-[hsl(var(--color-text-muted))]">
                 {unitLabel[unit]}
               </div>
             </div>

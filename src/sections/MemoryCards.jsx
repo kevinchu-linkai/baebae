@@ -36,7 +36,14 @@ export function MemoryCards() {
           >
             <div className={`absolute inset-0 bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]}`} />
             {memory.photo && (
-              <img src={memory.photo} alt={memory.caption} className="absolute inset-0 h-full w-full object-cover" />
+              <img
+                src={memory.photo}
+                alt={memory.caption}
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
             )}
             <div className="absolute inset-x-0 bottom-0 bg-[hsl(var(--color-surface)/90%)] px-3 py-2">
               <p className="text-xs font-medium text-[hsl(var(--color-text))]">{memory.caption}</p>
@@ -59,7 +66,14 @@ export function MemoryCards() {
               className={`relative w-full max-w-md aspect-[4/5] overflow-hidden rounded-2xl border-8 border-[hsl(var(--color-surface))] bg-gradient-to-br ${GRADIENTS[selected.id % GRADIENTS.length]}`}
             >
               {selected.photo && (
-                <img src={selected.photo} alt={selected.caption} className="absolute inset-0 h-full w-full object-cover" />
+                <img
+                  src={selected.photo}
+                  alt={selected.caption}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                  }}
+                />
               )}
               <div className="absolute inset-x-0 bottom-0 bg-[hsl(var(--color-surface)/90%)] px-4 py-3">
                 <p className="text-sm font-medium">{selected.caption}</p>

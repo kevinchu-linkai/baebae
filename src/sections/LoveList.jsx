@@ -23,7 +23,7 @@ export function LoveList() {
             <span className="text-[hsl(var(--color-primary))] font-semibold tabular-nums">
               {String(i + 1).padStart(2, '0')}
             </span>
-            <span className="text-sm leading-relaxed text-[hsl(var(--color-text-muted))]">{item}</span>
+            <span className="text-base leading-relaxed text-[hsl(var(--color-text-muted))]">{item}</span>
           </motion.li>
         ))}
       </ol>

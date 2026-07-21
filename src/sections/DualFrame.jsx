@@ -30,7 +30,7 @@ export function DualFrame() {
         <motion.h2 variants={item} className="mt-4 text-2xl md:text-4xl leading-snug">
           {content.dualFrame.heading}
         </motion.h2>
-        <motion.p variants={item} className="mt-5 text-[hsl(var(--color-text-muted))] leading-relaxed">
+        <motion.p variants={item} className="mt-5 text-base md:text-lg text-[hsl(var(--color-text-muted))] leading-relaxed">
           {content.dualFrame.body}
         </motion.p>
         <motion.div variants={item} className="mt-10 flex flex-wrap items-center justify-center gap-4">

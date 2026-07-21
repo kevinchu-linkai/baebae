@@ -1,16 +1,7 @@
 import { useRef, useEffect } from 'react'
 
-const CANVAS_W = 56
-const CANVAS_H = 92
-const WICK_X = CANVAS_W / 2
-const WICK_Y = CANVAS_H - 30
-
 function rand(min, max) {
   return min + Math.random() * (max - min)
-}
-
-function lerp(a, b, t) {
-  return a + (b - a) * t
 }
 
 // Fire color ramp: white-hot core -> yellow -> orange -> red -> smoke-grey,
@@ -81,10 +72,18 @@ class Particle {
   }
 }
 
-export function Candle({ blown, onBlow, index }) {
+// `scale` shrinks the whole candle (canvas + particle sizes + wax stick)
+// proportionally so a large candleCount still fits — physics constants stay
+// in the same units, just walked at a smaller pixel footprint.
+export function Candle({ blown, onBlow, index, scale = 1 }) {
   const canvasRef = useRef(null)
   const blownRef = useRef(blown)
   const burstDoneRef = useRef(false)
+
+  const canvasW = 56 * scale
+  const canvasH = 92 * scale
+  const wickX = canvasW / 2
+  const wickY = canvasH - 30 * scale
 
   useEffect(() => {
     blownRef.current = blown
@@ -95,10 +94,10 @@ export function Candle({ blown, onBlow, index }) {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvas.width = CANVAS_W * dpr
-    canvas.height = CANVAS_H * dpr
-    canvas.style.width = `${CANVAS_W}px`
-    canvas.style.height = `${CANVAS_H}px`
+    canvas.width = canvasW * dpr
+    canvas.height = canvasH * dpr
+    canvas.style.width = `${canvasW}px`
+    canvas.style.height = `${canvasH}px`
     ctx.scale(dpr, dpr)
 
     let particles = []
@@ -111,7 +110,7 @@ export function Candle({ blown, onBlow, index }) {
       last = now
       const t = now / 1000
 
-      ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
+      ctx.clearRect(0, 0, canvasW, canvasH)
 
       const isBlown = blownRef.current
 
@@ -120,20 +119,21 @@ export function Candle({ blown, onBlow, index }) {
         while (spawnAccumulator > 0.012) {
           spawnAccumulator -= 0.012
           particles.push(
-            new Particle(WICK_X + rand(-1.5, 1.5), WICK_Y, {
-              vx: rand(-6, 6),
-              vy: rand(-55, -75),
+            new Particle(wickX + rand(-1.5, 1.5) * scale, wickY, {
+              vx: rand(-6, 6) * scale,
+              vy: rand(-55, -75) * scale,
               life: rand(0.45, 0.75),
-              size: rand(6, 10),
+              size: rand(6, 10) * scale,
             }),
           )
         }
 
         // Warm glow behind the flame — the "lighting" cast by the fire.
         const flicker = 0.75 + Math.sin(t * 9) * 0.08 + Math.sin(t * 23) * 0.05
+        const glowR = 34 * scale * flicker
         const glowGrad = ctx.createRadialGradient(
-          WICK_X, WICK_Y - 14, 0,
-          WICK_X, WICK_Y - 14, 34 * flicker,
+          wickX, wickY - 14 * scale, 0,
+          wickX, wickY - 14 * scale, glowR,
         )
         glowGrad.addColorStop(0, `rgba(255,180,90,${0.5 * flicker})`)
         glowGrad.addColorStop(1, 'rgba(255,140,60,0)')
@@ -141,22 +141,22 @@ export function Candle({ blown, onBlow, index }) {
         ctx.globalCompositeOperation = 'lighter'
         ctx.fillStyle = glowGrad
         ctx.beginPath()
-        ctx.arc(WICK_X, WICK_Y - 14, 34 * flicker, 0, Math.PI * 2)
+        ctx.arc(wickX, wickY - 14 * scale, glowR, 0, Math.PI * 2)
         ctx.fill()
         ctx.restore()
 
-        canvas.style.filter = `drop-shadow(0 0 ${10 * flicker}px rgba(255,150,70,0.8))`
+        canvas.style.filter = `drop-shadow(0 0 ${10 * scale * flicker}px rgba(255,150,70,0.8))`
       } else if (!burstDoneRef.current) {
         burstDoneRef.current = true
         for (let i = 0; i < 16; i++) {
           const angle = -Math.PI / 2 + rand(-0.9, 0.9)
-          const speed = rand(24, 60)
+          const speed = rand(24, 60) * scale
           particles.push(
-            new Particle(WICK_X, WICK_Y - 6, {
+            new Particle(wickX, wickY - 6 * scale, {
               vx: Math.cos(angle) * speed,
               vy: Math.sin(angle) * speed,
               life: rand(0.9, 1.4),
-              size: rand(5, 9),
+              size: rand(5, 9) * scale,
               smoke: true,
             }),
           )
@@ -172,7 +172,8 @@ export function Candle({ blown, onBlow, index }) {
     frameId = requestAnimationFrame(tick)
 
     return () => cancelAnimationFrame(frameId)
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scale])
 
   return (
     <button
@@ -184,8 +185,11 @@ export function Candle({ blown, onBlow, index }) {
     >
       <canvas ref={canvasRef} className="pointer-events-none" />
       <div
-        className="-mt-6 h-10 w-3 rounded-sm"
+        className="rounded-sm"
         style={{
+          marginTop: -24 * scale,
+          width: 12 * scale,
+          height: 40 * scale,
           background: 'linear-gradient(180deg, hsl(var(--color-primary)) 0%, hsl(var(--color-primary-hover)) 100%)',
         }}
       />
