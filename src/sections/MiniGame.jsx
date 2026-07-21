@@ -64,18 +64,20 @@ function Quiz() {
   )
 }
 
-// A lot of candles need a smaller footprint each and more columns so they
-// still read as a full ring across a wider cake instead of overflowing.
-function candleLayout(total) {
-  if (total <= 6) return { scale: 1, cols: total }
-  if (total <= 12) return { scale: 0.75, cols: 6 }
-  return { scale: 0.55, cols: 8 }
+// All candles stay in a single row so they visually sit on one continuous
+// cake surface — more candles just means each one gets thinner, not a new
+// row (a grid that wraps reads as candles stacked in mid-air, not on a cake).
+function candleScale(total) {
+  if (total <= 6) return 1
+  if (total <= 10) return 0.8
+  if (total <= 16) return 0.6
+  return 0.42
 }
 
 function Cake({ onAllBlown }) {
   const [blown, setBlown] = useState(() => new Set())
   const total = content.cake.candleCount
-  const { scale, cols } = candleLayout(total)
+  const scale = candleScale(total)
 
   const blowCandle = (i) => {
     setBlown((prev) => {
@@ -93,20 +95,20 @@ function Cake({ onAllBlown }) {
       </p>
       <p className="mt-2 text-base text-[hsl(var(--color-text-muted))]">{content.cake.subheading}</p>
 
-      <div
-        className="mx-auto mt-2 grid justify-center items-end gap-x-1 gap-y-0"
-        style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
-      >
-        {Array.from({ length: total }, (_, i) => (
-          <Candle key={i} index={i} scale={scale} blown={blown.has(i)} onBlow={() => blowCandle(i)} />
-        ))}
-      </div>
+      {/* Scales the whole candle+cake group down on narrow screens so a
+          single unbroken row of candles never overflows or wraps. */}
+      <div className="mx-auto mt-6 w-fit origin-top scale-[0.55] sm:scale-75 md:scale-100">
+        <div className="flex items-end justify-center gap-px">
+          {Array.from({ length: total }, (_, i) => (
+            <Candle key={i} index={i} scale={scale} blown={blown.has(i)} onBlow={() => blowCandle(i)} />
+          ))}
+        </div>
 
-      {/* Two-tier cake, wide enough to carry a full ring of candles */}
-      <div className="mx-auto -mt-1 h-10 w-56 rounded-t-[35%] bg-gradient-to-b from-[hsl(var(--color-surface))] to-[hsl(var(--color-surface)/75%)] border border-[hsl(var(--color-border))]" />
-      <div className="mx-auto h-20 w-80 rounded-t-2xl bg-gradient-to-b from-[hsl(var(--color-surface))] to-[hsl(var(--color-surface)/65%)] border border-t-0 border-[hsl(var(--color-border))]" />
-      <div className="mx-auto h-8 w-[26rem] max-w-full rounded-b-2xl bg-gradient-to-b from-[hsl(var(--color-surface))] to-[hsl(var(--color-surface)/55%)] border border-t-0 border-[hsl(var(--color-border))]" />
-      <div className="mx-auto h-3 w-[28rem] max-w-full rounded-full bg-[hsl(var(--color-border)/40%)] blur-sm" />
+        {/* Single wide tier the candles actually stand on, plus a base for weight */}
+        <div className="mx-auto -mt-2 h-14 w-[36rem] rounded-t-[2.5rem] bg-gradient-to-b from-[hsl(var(--color-surface))] to-[hsl(var(--color-surface)/70%)] border border-[hsl(var(--color-border))]" />
+        <div className="mx-auto h-10 w-[40rem] rounded-b-2xl bg-gradient-to-b from-[hsl(var(--color-surface))] to-[hsl(var(--color-surface)/55%)] border border-t-0 border-[hsl(var(--color-border))]" />
+        <div className="mx-auto h-3 w-[42rem] rounded-full bg-[hsl(var(--color-border)/40%)] blur-sm" />
+      </div>
     </div>
   )
 }
