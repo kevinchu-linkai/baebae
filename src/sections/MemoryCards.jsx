@@ -15,9 +15,9 @@ export function MemoryCards() {
     <section className="relative z-10 px-4 py-24">
       <div className="mx-auto max-w-3xl text-center mb-14">
         <p className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--color-primary)/85%)]">
-          A trail of moments
+          一路走來的片刻
         </p>
-        <h2 className="mt-3 text-xl md:text-2xl">Tap one to open it</h2>
+        <h2 className="mt-3 text-xl md:text-2xl">點一下,打開回憶</h2>
       </div>
 
       <div className="mx-auto grid max-w-4xl grid-cols-2 gap-5 md:grid-cols-3">

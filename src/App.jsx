@@ -14,8 +14,8 @@ const DEFAULT_COLOR = '#ec4899'
 const FALLBACK_PALETTE = ['#ec4899', '#f97316', '#a855f7', '#eab308', '#34d399', '#60a5fa']
 
 const TRACKS = [
-  { id: 'birthday', label: 'Birthday message', src: '/audio/birthday.m4a', cues: '/audio/birthday.cues.json' },
-  { id: 'anniversary', label: 'Anniversary message', src: '/audio/anniversary.mp3', cues: '/audio/anniversary.cues.json' },
+  { id: 'birthday', label: '生日留言', src: '/audio/birthday.m4a', cues: '/audio/birthday.cues.json' },
+  { id: 'anniversary', label: '紀念日留言', src: '/audio/anniversary.mp3', cues: '/audio/anniversary.cues.json' },
 ]
 
 function App() {

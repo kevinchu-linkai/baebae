@@ -11,7 +11,7 @@ function CityColumn({ city, notes, align }) {
       className="flex-1 rounded-2xl border border-[hsl(var(--color-border))] bg-[hsl(var(--color-surface)/55%)] p-6 md:p-8"
     >
       <p className="text-xs uppercase tracking-[0.25em] text-[hsl(var(--color-primary)/85%)]">
-        From {city}
+        來自{city}
       </p>
       <ul className="mt-5 space-y-4">
         {notes.map((note, i) => (
@@ -36,10 +36,10 @@ export function DualCities() {
     <section className="relative z-10 px-4 py-24">
       <div className="mx-auto max-w-4xl text-center mb-12">
         <p className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--color-primary)/85%)]">
-          Two cities, one story
+          兩座城市,一個故事
         </p>
         <h2 className="mt-3 text-xl md:text-2xl">
-          {content.cities.yours} and {content.cities.hers}
+          {content.cities.yours} 與 {content.cities.hers}
         </h2>
       </div>
       <div className="mx-auto flex max-w-4xl flex-col gap-6 md:flex-row">

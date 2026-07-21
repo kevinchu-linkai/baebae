@@ -25,7 +25,7 @@ export function DualFrame() {
         className="max-w-2xl"
       >
         <motion.p variants={item} className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--color-primary)/85%)]">
-          Episode one
+          第一集
         </motion.p>
         <motion.h2 variants={item} className="mt-4 text-2xl md:text-4xl leading-snug">
           {content.dualFrame.heading}
@@ -34,8 +34,8 @@ export function DualFrame() {
           {content.dualFrame.body}
         </motion.p>
         <motion.div variants={item} className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Countdown label="Her birthday" targetDate={BIRTHDAY} />
-          <Countdown label="Our anniversary" targetDate={ANNIVERSARY} />
+          <Countdown label="她的生日" targetDate={BIRTHDAY} />
+          <Countdown label="我們的紀念日" targetDate={ANNIVERSARY} />
         </motion.div>
       </motion.div>
     </section>

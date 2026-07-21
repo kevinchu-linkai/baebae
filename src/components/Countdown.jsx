@@ -10,7 +10,7 @@ function getRemaining(targetDate) {
   return { days, hours, minutes, seconds, done: diff === 0 }
 }
 
-const unitLabel = { days: 'days', hours: 'hrs', minutes: 'min', seconds: 'sec' }
+const unitLabel = { days: '天', hours: '時', minutes: '分', seconds: '秒' }
 
 export function Countdown({ label, targetDate }) {
   const [remaining, setRemaining] = useState(() => getRemaining(targetDate))
@@ -30,7 +30,7 @@ export function Countdown({ label, targetDate }) {
         {label}
       </p>
       {remaining.done ? (
-        <p className="mt-2 text-lg font-semibold text-[hsl(var(--color-primary))]">Today ♥</p>
+        <p className="mt-2 text-lg font-semibold text-[hsl(var(--color-primary))]">就是今天 ♥</p>
       ) : (
         <div className="mt-2 flex gap-3">
           {(['days', 'hours', 'minutes', 'seconds']).map((unit) => (

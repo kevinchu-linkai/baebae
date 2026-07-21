@@ -1,86 +1,86 @@
-// Everything you'd want to personalize lives here in one place. Replace the
-// placeholder strings/arrays below — no other file needs to change.
+// 這裡集中放所有你想個人化的文字內容。把下面標示「〔待填寫〕」的地方換成
+// 真正的內容就好,其他檔案都不需要修改。
 
 export const content = {
   recipientName: 'Eliana',
-  cities: { yours: 'London', hers: 'Grenoble' },
+  cities: { yours: '倫敦', hers: '格勒諾布爾' },
 
   intro: {
-    loaderLine: 'For Eliana only.',
-    tagline: 'A special transmission for your birthday + our anniversary.',
-    startLabel: 'Start the story',
-    dodgeLabel: 'Skip the mushy stuff',
+    loaderLine: '僅屬於 Eliana。',
+    tagline: '一場特別放送,獻給妳的生日,也獻給我們的紀念日。',
+    startLabel: '開始這個故事',
+    dodgeLabel: '跳過肉麻的部分',
   },
 
   dualFrame: {
-    heading: 'Today we celebrate two things: you, and us.',
-    body: 'One day for the day you were born, one for the day we started. Placeholder — write a line or two about why both days matter this year.',
+    heading: '今天,我們慶祝兩件事:妳,以及我們。',
+    body: '〔待填寫〕一天是妳出生的日子,一天是我們開始的日子。寫一兩句話,說說今年這兩天為什麼特別重要。',
   },
 
   dualCities: {
     yours: [
-      'Placeholder note from London — something small you noticed today.',
-      'Placeholder — a thing that made you think of her from here.',
-      'Placeholder — what the distance feels like this week.',
+      '〔待填寫〕從倫敦寫下的一則小記——今天注意到的小事。',
+      '〔待填寫〕在這裡讓妳想起她的一件事。',
+      '〔待填寫〕這個星期,遠距離的感覺是什麼樣子。',
     ],
     hers: [
-      'Placeholder note "from" Grenoble — in her voice, or how you imagine her day.',
-      'Placeholder — a detail about her city/routine.',
-      'Placeholder — an inside joke about the two places.',
+      '〔待填寫〕「來自」格勒諾布爾的一則小記——用她的語氣,或妳想像中她一天的樣子。',
+      '〔待填寫〕關於她的城市/日常的一個小細節。',
+      '〔待填寫〕關於這兩座城市的一個小玩笑。',
     ],
   },
 
   memories: [
-    { id: 1, caption: 'First hello', date: 'Placeholder date', photo: null },
-    { id: 2, caption: 'That trip', date: 'Placeholder date', photo: null },
-    { id: 3, caption: 'Her laugh', date: 'Placeholder date', photo: null },
-    { id: 4, caption: 'Quiet mornings', date: 'Placeholder date', photo: null },
-    { id: 5, caption: 'A year of us', date: 'Placeholder date', photo: null },
-    { id: 6, caption: 'Somewhere new', date: 'Placeholder date', photo: null },
+    { id: 1, caption: '第一次打招呼', date: '〔待填寫日期〕', photo: null },
+    { id: 2, caption: '那趟旅行', date: '〔待填寫日期〕', photo: null },
+    { id: 3, caption: '她的笑聲', date: '〔待填寫日期〕', photo: null },
+    { id: 4, caption: '安靜的早晨', date: '〔待填寫日期〕', photo: null },
+    { id: 5, caption: '我們的這一年', date: '〔待填寫日期〕', photo: null },
+    { id: 6, caption: '一個新地方', date: '〔待填寫日期〕', photo: null },
   ],
 
   loveList: [
-    'Placeholder — something observant, not generic, about how she laughs.',
-    'Placeholder — a specific habit of hers you love.',
-    'Placeholder — something she says often.',
-    'Placeholder — how she makes ordinary days better.',
-    'Placeholder — a way she surprised you.',
-    'Placeholder — something about how she thinks.',
-    'Placeholder — a small kindness she does without noticing.',
-    'Placeholder — something about her that only you would know.',
-    'Placeholder — a moment you wish you could relive for 10 more minutes.',
-    'Placeholder — what long-distance taught you about loving her.',
+    '〔待填寫〕關於她的笑容,一件具體而非空泛的小事。',
+    '〔待填寫〕她的一個特別的小習慣。',
+    '〔待填寫〕她常說的一句話。',
+    '〔待填寫〕她如何讓平凡的日子變得不一樣。',
+    '〔待填寫〕她曾經給妳的一個驚喜。',
+    '〔待填寫〕關於她思考方式的一件事。',
+    '〔待填寫〕她不經意間展現的一個小小的善良。',
+    '〔待填寫〕一件只有你才知道關於她的事。',
+    '〔待填寫〕一個妳希望能再多重溫十分鐘的時刻。',
+    '〔待填寫〕遠距離這件事,教會你關於愛她的什麼。',
   ],
 
   quiz: [
-    { question: 'Who says bye last on every call?', answer: 'Placeholder answer' },
-    { question: 'Which meal became our accidental tradition?', answer: 'Placeholder answer' },
-    { question: 'What do I always tease you about?', answer: 'Placeholder answer' },
-    { question: "What's the one show/movie we quote too much?", answer: 'Placeholder answer' },
-    { question: 'Where do we keep saying we\'ll go next?', answer: 'Placeholder answer' },
+    { question: '每次通話,總是誰最後說再見?', answer: '〔待填寫答案〕' },
+    { question: '哪一餐意外變成了我們的傳統?', answer: '〔待填寫答案〕' },
+    { question: '我總是拿什麼取笑妳?', answer: '〔待填寫答案〕' },
+    { question: '我們老是引用台詞的那部劇或電影是哪一部?', answer: '〔待填寫答案〕' },
+    { question: '我們一直說下次要一起去哪裡?', answer: '〔待填寫答案〕' },
   ],
 
   cake: {
-    heading: 'Make a wish.',
-    subheading: 'Blow out every candle to unlock your letter.',
+    heading: '許個願吧。',
+    subheading: '吹熄每一根蠟燭,解鎖妳的信。',
     candleCount: 5,
   },
 
   letter: {
-    heading: 'A letter for you',
-    lockedHint: 'Blow out all the candles above to read it.',
+    heading: '給妳的一封信',
+    lockedHint: '把上面的蠟燭都吹熄,才能打開閱讀。',
     paragraphs: [
-      'Placeholder — open the letter with how today feels.',
-      'Placeholder — a specific memory or two, in your own words.',
-      'Placeholder — what you love about who she is, not just how she looks.',
-      'Placeholder — what you\'re looking forward to next.',
-      'Placeholder — close with the line you actually want her to remember.',
+      '〔待填寫〕用今天的心情作為信的開頭。',
+      '〔待填寫〕用妳自己的話,寫一兩個具體的回憶。',
+      '〔待填寫〕寫寫妳愛她「這個人」的哪些部分,而不只是外表。',
+      '〔待填寫〕寫寫妳期待接下來的什麼。',
+      '〔待填寫〕用妳真正希望她記住的那句話作結尾。',
     ],
-    signOff: 'Placeholder — how you sign off.',
+    signOff: '〔待填寫〕想想妳想怎麼署名。',
   },
 
   finale: {
-    line: 'Here\'s to you, and to us — happy birthday, happy anniversary.',
-    replayLabel: 'Replay our story',
+    line: '敬妳,也敬我們——生日快樂,紀念日快樂。',
+    replayLabel: '重新看一次我們的故事',
   },
 }

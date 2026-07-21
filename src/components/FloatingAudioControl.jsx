@@ -14,7 +14,7 @@ export function FloatingAudioControl({
     <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-2">
       {audioMissing && (
         <p className="max-w-[220px] rounded-lg bg-[hsl(var(--color-surface)/90%)] border border-[hsl(var(--color-border))] px-3 py-2 text-xs text-[hsl(var(--color-text-muted))]">
-          No recording found yet at <code>{track.src}</code>.
+          還沒在 <code>{track.src}</code> 找到錄音檔。
         </p>
       )}
       <div className="flex items-center gap-2 rounded-full border border-[hsl(var(--color-border))] bg-[hsl(var(--color-surface)/70%)] backdrop-blur px-2 py-2">

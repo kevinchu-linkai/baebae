@@ -17,7 +17,8 @@ export const LOVE_WORDS = [
   { word: 'lyubov', lang: 'Russian', color: '#84cc16' },
   { word: 'любовь', lang: 'Russian', color: '#84cc16' },
   { word: 'ai', lang: 'Mandarin', color: '#38bdf8' },
-  { word: '爱', lang: 'Mandarin', color: '#38bdf8' },
+  { word: '愛', lang: 'Mandarin', color: '#38bdf8' }, // Traditional
+  { word: '爱', lang: 'Mandarin', color: '#38bdf8' }, // Simplified (Whisper often outputs this even for zh-Hant speech)
   { word: 'sarang', lang: 'Korean', color: '#fb7185' },
   { word: '사랑', lang: 'Korean', color: '#fb7185' },
   { word: 'ai suru', lang: 'Japanese', color: '#facc15' },

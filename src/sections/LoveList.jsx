@@ -6,9 +6,9 @@ export function LoveList() {
     <section className="relative z-10 px-4 py-24">
       <div className="mx-auto max-w-2xl text-center mb-12">
         <p className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--color-primary)/85%)]">
-          This year
+          今年
         </p>
-        <h2 className="mt-3 text-xl md:text-2xl">Ten things I love about you</h2>
+        <h2 className="mt-3 text-xl md:text-2xl">關於妳,我愛的十件事</h2>
       </div>
       <ol className="mx-auto max-w-xl space-y-4">
         {content.loveList.map((item, i) => (

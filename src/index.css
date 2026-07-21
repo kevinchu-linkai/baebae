@@ -62,7 +62,7 @@
 
 body {
   margin: 0;
-  font-family: 'Georgia', 'Iowan Old Style', serif;
+  font-family: 'Noto Serif TC', 'Georgia', 'Iowan Old Style', serif;
   background: hsl(var(--color-bg));
   color: hsl(var(--color-text));
 }

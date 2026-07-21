@@ -19,9 +19,9 @@ function Quiz() {
     <div className="mx-auto max-w-xl">
       <div className="text-center mb-10">
         <p className="text-xs uppercase tracking-[0.3em] text-[hsl(var(--color-primary)/85%)]">
-          Guess my answer
+          猜猜我的答案
         </p>
-        <h2 className="mt-3 text-xl md:text-2xl">A short, unfair quiz</h2>
+        <h2 className="mt-3 text-xl md:text-2xl">一個不太公平的小測驗</h2>
       </div>
       <div className="space-y-3">
         {content.quiz.map((q, i) => (
@@ -40,7 +40,7 @@ function Quiz() {
             >
               <span className="text-sm font-medium">{q.question}</span>
               <span className="text-xs text-[hsl(var(--color-primary))]">
-                {revealed.has(i) ? 'Hide' : 'Reveal'}
+                {revealed.has(i) ? '收起' : '看答案'}
               </span>
             </button>
             <AnimatePresence>
@@ -70,7 +70,7 @@ function Candle({ blown, onBlow, index }) {
       onClick={onBlow}
       disabled={blown}
       className="relative flex flex-col items-center"
-      aria-label={`Candle ${index + 1}`}
+      aria-label={`第 ${index + 1} 根蠟燭`}
     >
       <div className="h-8 w-6 flex items-center justify-center">
         <AnimatePresence>
