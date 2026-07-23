@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "detect-love-words": "node scripts/detect-love-words.mjs",
-    "deploy": "wrangler pages deploy dist"
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "framer-motion": "^12.42.2",
